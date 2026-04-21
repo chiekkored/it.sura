@@ -71,6 +71,10 @@ export async function middleware(request: NextRequest) {
       await supabase.auth.signOut();
       return createRedirectResponse("/admin/login?error=Unauthorized");
     }
+
+    if (profile.role === "staff" && (pathname.startsWith("/admin/users") || pathname.startsWith("/admin/logs"))) {
+      return createRedirectResponse("/admin");
+    }
   }
 
   // Redirect authenticated users away from login page
@@ -82,7 +86,7 @@ export async function middleware(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (profile && ["admin", "staff"].includes(profile.role)) {
+    if (profile && ["superadmin", "admin", "staff"].includes(profile.role)) {
       return createRedirectResponse("/admin");
     }
     // If authenticated but no role, we let it fall through so the layout can handle the signout/redirect

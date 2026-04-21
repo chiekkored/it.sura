@@ -4,6 +4,7 @@ export type {
   Listing,
   ListingPhoto,
   OrderRequest,
+  ActivityLog,
   OrderStatus,
   ListingWithPhotos,
   OrderRequestWithListing,

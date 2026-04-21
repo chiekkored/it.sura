@@ -195,6 +195,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      activity_logs: {
+        Row: {
+          id: string;
+          actor_id: string | null;
+          actor_name: string | null;
+          actor_role: "superadmin" | "admin" | "staff" | null;
+          action: string;
+          entity_type: string;
+          entity_id: string | null;
+          entity_label: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          actor_id?: string | null;
+          actor_name?: string | null;
+          actor_role?: "superadmin" | "admin" | "staff" | null;
+          action: string;
+          entity_type: string;
+          entity_id?: string | null;
+          entity_label?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          actor_id?: string | null;
+          actor_name?: string | null;
+          actor_role?: "superadmin" | "admin" | "staff" | null;
+          action?: string;
+          entity_type?: string;
+          entity_id?: string | null;
+          entity_label?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -215,6 +254,7 @@ export type Listing = Database["public"]["Tables"]["listings"]["Row"];
 export type ListingPhoto = Database["public"]["Tables"]["listing_photos"]["Row"];
 export type ListingInventory = Database["public"]["Tables"]["listing_inventory"]["Row"];
 export type OrderRequest = Database["public"]["Tables"]["order_requests"]["Row"];
+export type ActivityLog = Database["public"]["Tables"]["activity_logs"]["Row"];
 
 export type OrderStatus = OrderRequest["status"];
 

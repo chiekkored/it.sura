@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logActivity } from "@/lib/activity-logs";
 import { categorySchema } from "@/lib/validators/category";
 
 interface Context {
@@ -21,12 +22,12 @@ async function requireAdminSession() {
     return { supabase, error: NextResponse.json({ error: "Unauthorized" }, { status: 403 }) };
   }
 
-  return { supabase, error: null };
+  return { supabase, user, profile, error: null };
 }
 
 export async function PUT(request: Request, { params }: Context) {
   const { id } = await params;
-  const { supabase, error: authError } = await requireAdminSession();
+  const { supabase, user, profile, error: authError } = await requireAdminSession();
   if (authError) return authError;
 
   const body = await request.json();
@@ -47,12 +48,22 @@ export async function PUT(request: Request, { params }: Context) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  await logActivity({
+    actorId: user.id,
+    actorRole: profile.role,
+    action: "category.update",
+    entityType: "category",
+    entityId: data.id,
+    entityLabel: data.name,
+    metadata: { slug: data.slug },
+  });
+
   return NextResponse.json(data);
 }
 
 export async function DELETE(_request: Request, { params }: Context) {
   const { id } = await params;
-  const { supabase, error: authError } = await requireAdminSession();
+  const { supabase, user, profile, error: authError } = await requireAdminSession();
   if (authError) return authError;
 
   const { count, error: countError } = await supabase
@@ -69,8 +80,20 @@ export async function DELETE(_request: Request, { params }: Context) {
     );
   }
 
+  const { data: category } = await supabase.from("categories").select("name, slug").eq("id", id).maybeSingle();
+
   const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await logActivity({
+    actorId: user.id,
+    actorRole: profile.role,
+    action: "category.delete",
+    entityType: "category",
+    entityId: id,
+    entityLabel: category?.name ?? null,
+    metadata: { slug: category?.slug ?? null },
+  });
 
   return new NextResponse(null, { status: 204 });
 }

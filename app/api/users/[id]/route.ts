@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logActivity } from "@/lib/activity-logs";
 import { userUpdateSchema } from "@/lib/validators/user";
 
 type ProfileUpdate = {
@@ -32,7 +33,7 @@ export async function PUT(
   // Check if target user is superadmin
   const { data: targetProfile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("full_name, role")
     .eq("id", id)
     .single();
 
@@ -64,6 +65,18 @@ export async function PUT(
     if (passwordError) {
       return NextResponse.json({ error: passwordError.message }, { status: 500 });
     }
+
+    await logActivity({
+      actorId: adminUser.id,
+      actorRole: adminProfile.role,
+      action: "user.change_password",
+      entityType: "user",
+      entityId: id,
+      entityLabel: targetProfile?.full_name ?? fullName ?? null,
+      metadata: {
+        self: adminUser.id === id,
+      },
+    });
   }
 
   const profileUpdate: ProfileUpdate = {};
@@ -85,6 +98,20 @@ export async function PUT(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await logActivity({
+    actorId: adminUser.id,
+    actorRole: adminProfile.role,
+    action: "user.update",
+    entityType: "user",
+    entityId: id,
+    entityLabel: data.full_name,
+    metadata: {
+      previous_name: targetProfile?.full_name ?? null,
+      previous_role: targetProfile?.role ?? null,
+      next_role: data.role,
+    },
+  });
 
   return NextResponse.json(data);
 }
@@ -113,7 +140,7 @@ export async function DELETE(
   // Check if target user is superadmin
   const { data: targetProfile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("full_name, role")
     .eq("id", id)
     .single();
 
@@ -133,6 +160,18 @@ export async function DELETE(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await logActivity({
+    actorId: adminUser.id,
+    actorRole: adminProfile.role,
+    action: "user.delete",
+    entityType: "user",
+    entityId: id,
+    entityLabel: targetProfile?.full_name ?? null,
+    metadata: {
+      role: targetProfile?.role ?? null,
+    },
+  });
 
   return NextResponse.json({ success: true });
 }
