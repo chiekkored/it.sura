@@ -158,7 +158,7 @@ export type Database = {
           size: string | null;
           quantity: number;
           message: string | null;
-          status: "new" | "contacted" | "pending_payment" | "closed" | "cancelled";
+          status: "new" | "contacted" | "pending_payment" | "completed" | "cancelled";
           created_at: string;
           updated_at: string;
         };
@@ -174,7 +174,7 @@ export type Database = {
           size?: string | null;
           quantity?: number;
           message?: string | null;
-          status?: "new" | "contacted" | "pending_payment" | "closed" | "cancelled";
+          status?: "new" | "contacted" | "pending_payment" | "completed" | "cancelled";
           created_at?: string;
           updated_at?: string;
         };
@@ -190,7 +190,7 @@ export type Database = {
           size?: string | null;
           quantity?: number;
           message?: string | null;
-          status?: "new" | "contacted" | "pending_payment" | "closed" | "cancelled";
+          status?: "new" | "contacted" | "pending_payment" | "completed" | "cancelled";
           updated_at?: string;
         };
         Relationships: [];
@@ -239,7 +239,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      update_order_status_with_inventory: {
+        Args: {
+          p_order_id: string;
+          p_status: "new" | "contacted" | "pending_payment" | "completed" | "cancelled";
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;

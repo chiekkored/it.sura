@@ -12,7 +12,7 @@ const statuses: { value: OrderStatus; label: string }[] = [
   { value: "new", label: "New" },
   { value: "contacted", label: "Contacted" },
   { value: "pending_payment", label: "Pending Payment" },
-  { value: "closed", label: "Closed" },
+  { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" },
 ];
 
@@ -37,19 +37,31 @@ export function UpdateOrderStatusModal({
 
   const handleUpdate = async () => {
     setLoading(true);
-    const res = await fetch(`/api/orders/${orderId}/status`, {
+    const response = await fetch(`/api/orders/${orderId}/status`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
 
+    const result = (await response.json()) as {
+      error?: string;
+      auto_cancelled_count?: number;
+    };
+
     setLoading(false);
-    if (!res.ok) {
-      toast.error("Failed to update status");
+    if (!response.ok) {
+      toast.error(result.error ?? "Failed to update status");
       return;
     }
 
     toast.success("Order status updated");
+    if (result.auto_cancelled_count && result.auto_cancelled_count > 0) {
+      toast.warning(
+        `${result.auto_cancelled_count} other ${
+          result.auto_cancelled_count === 1 ? "order was" : "orders were"
+        } cancelled because stock is no longer available.`,
+      );
+    }
     setOpen(false);
     onSuccess?.();
   };

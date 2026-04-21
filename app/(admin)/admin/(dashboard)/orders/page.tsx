@@ -28,7 +28,7 @@ const getStatusVariant = (status: OrderStatus): "default" | "secondary" | "destr
       return "default";
     case "pending_payment":
       return "outline";
-    case "closed":
+    case "completed":
       return "default";
     case "cancelled":
       return "destructive";
@@ -41,7 +41,7 @@ const statusLabels: Record<OrderStatus, string> = {
   new: "New",
   contacted: "Contacted",
   pending_payment: "Pending Payment",
-  closed: "Closed",
+  completed: "Completed",
   cancelled: "Cancelled",
 };
 

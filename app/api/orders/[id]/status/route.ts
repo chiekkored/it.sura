@@ -2,10 +2,23 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { logActivity } from "@/lib/activity-logs";
 import { createClient } from "@/lib/supabase/server";
+import type { Json } from "@/types/database";
 
 const statusSchema = z.object({
-  status: z.enum(["new", "contacted", "pending_payment", "closed", "cancelled"]),
+  status: z.enum(["new", "contacted", "pending_payment", "completed", "cancelled"]),
 });
+
+type StatusUpdateResult = {
+  order?: {
+    request_code?: string;
+  };
+  previous_status?: string;
+  next_status?: string;
+  inventory_delta?: number;
+  remaining_quantity?: number | null;
+  auto_cancelled_orders?: Json[];
+  auto_cancelled_count?: number;
+};
 
 interface Context {
   params: Promise<{ id: string }>;
@@ -31,22 +44,17 @@ export async function PUT(request: Request, { params }: Context) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message }, { status: 400 });
   }
 
-  const { data: order, error: orderError } = await supabase
-    .from("order_requests")
-    .select("request_code, status")
-    .eq("id", id)
-    .single();
+  const { data, error } = await supabase.rpc("update_order_status_with_inventory", {
+    p_order_id: id,
+    p_status: parsed.data.status,
+  });
 
-  if (orderError) return NextResponse.json({ error: orderError.message }, { status: 500 });
+  if (error) {
+    const status = error.code === "42501" ? 403 : ["22003", "22023", "P0002"].includes(error.code) ? 400 : 500;
+    return NextResponse.json({ error: error.message }, { status });
+  }
 
-  const { data, error } = await supabase
-    .from("order_requests")
-    .update({ status: parsed.data.status })
-    .eq("id", id)
-    .select()
-    .single();
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const result = data as StatusUpdateResult;
 
   await logActivity({
     actorId: user.id,
@@ -54,12 +62,16 @@ export async function PUT(request: Request, { params }: Context) {
     action: "order.status_update",
     entityType: "order_request",
     entityId: id,
-    entityLabel: order.request_code,
+    entityLabel: result.order?.request_code ?? null,
     metadata: {
-      previous_status: order.status,
-      next_status: parsed.data.status,
+      previous_status: result.previous_status,
+      next_status: result.next_status,
+      inventory_delta: result.inventory_delta,
+      remaining_quantity: result.remaining_quantity,
+      auto_cancelled_orders: result.auto_cancelled_orders ?? [],
+      auto_cancelled_count: result.auto_cancelled_count ?? 0,
     },
   });
 
-  return NextResponse.json(data);
+  return NextResponse.json(result);
 }
