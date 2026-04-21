@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { adminLogsEnabled } from "@/flags";
 import type { Json } from "@/types/database";
 
 type AdminRole = "superadmin" | "admin" | "staff";
@@ -25,6 +26,8 @@ export async function logActivity({
   metadata = {},
 }: LogActivityInput) {
   try {
+    if (!(await adminLogsEnabled())) return;
+
     const adminClient = createAdminClient();
     let resolvedActorName = actorName;
     let resolvedActorRole = actorRole;

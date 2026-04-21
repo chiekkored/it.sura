@@ -20,9 +20,10 @@ const navItems = [
 interface SidebarProps {
   onClose?: () => void;
   role?: string;
+  logsEnabled: boolean;
 }
 
-export function Sidebar({ onClose, role }: SidebarProps) {
+export function Sidebar({ onClose, role, logsEnabled }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -34,7 +35,7 @@ export function Sidebar({ onClose, role }: SidebarProps) {
 
   const filteredNavItems = navItems.filter((item) => {
     if (role === "staff" && item.href === "/admin/users") return false;
-    if (role === "staff" && item.href === "/admin/logs") return false;
+    if (item.href === "/admin/logs" && (role === "staff" || !logsEnabled)) return false;
     return true;
   });
 

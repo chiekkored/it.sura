@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 // ... (rest of imports)
 
-export function AdminShell({ children }: { children: ReactNode }) {
+export function AdminShell({ children, logsEnabled }: { children: ReactNode; logsEnabled: boolean }) {
   const [open, setOpen] = useState(false);
   const [role, setRole] = useState<string | undefined>();
 
@@ -33,14 +33,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
     <div className="flex h-screen overflow-hidden">
       {/* Desktop sidebar */}
       <div className="hidden md:flex flex-none">
-        <Sidebar role={role} />
+        <Sidebar role={role} logsEnabled={logsEnabled} />
       </div>
 
       {/* Mobile sidebar drawer */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="left" className="p-0 w-64">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <Sidebar onClose={() => setOpen(false)} role={role} />
+          <Sidebar onClose={() => setOpen(false)} role={role} logsEnabled={logsEnabled} />
         </SheetContent>
       </Sheet>
       {/* Main content */}
