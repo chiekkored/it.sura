@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, ShoppingCart, Tags, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingCart, Tags, Users, LogOut, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ const navItems = [
   { href: "/admin/categories", label: "Categories", icon: Tags, exact: false },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart, exact: false },
   { href: "/admin/users", label: "Users", icon: Users, exact: false },
+  { href: "/admin/logs", label: "Logs", icon: ClipboardList, exact: false },
 ];
 
 interface SidebarProps {
@@ -33,6 +34,7 @@ export function Sidebar({ onClose, role }: SidebarProps) {
 
   const filteredNavItems = navItems.filter((item) => {
     if (role === "staff" && item.href === "/admin/users") return false;
+    if (role === "staff" && item.href === "/admin/logs") return false;
     return true;
   });
 

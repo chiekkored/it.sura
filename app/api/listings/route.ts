@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logActivity } from "@/lib/activity-logs";
 import { listingSchema } from "@/lib/validators/listing";
 
 export async function POST(request: Request) {
@@ -50,6 +51,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: inventoryError.message }, { status: 500 });
     }
   }
+
+  await logActivity({
+    actorId: user.id,
+    action: "listing.create",
+    entityType: "listing",
+    entityId: listing.id,
+    entityLabel: listing.title,
+    metadata: {
+      slug: listing.slug,
+      price: listing.price,
+      inventory_count: inventory?.length ?? 0,
+    },
+  });
 
   return NextResponse.json(listing, { status: 201 });
 }

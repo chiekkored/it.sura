@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createClient } from "@/lib/supabase/client";
 import type { OrderStatus } from "@/types";
 import { Pencil } from "lucide-react";
 import { toast } from "sonner";
@@ -38,11 +37,14 @@ export function UpdateOrderStatusModal({
 
   const handleUpdate = async () => {
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase.from("order_requests").update({ status }).eq("id", orderId);
+    const res = await fetch(`/api/orders/${orderId}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
 
     setLoading(false);
-    if (error) {
+    if (!res.ok) {
       toast.error("Failed to update status");
       return;
     }

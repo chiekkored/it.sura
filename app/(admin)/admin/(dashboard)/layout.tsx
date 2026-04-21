@@ -24,11 +24,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     redirect("/admin/login?error=Unauthorized");
   }
 
-  // Prevent staff from accessing user management
+  // Prevent staff from accessing restricted admin management pages
   const headersList = (await import("next/headers")).headers();
   const path = (await headersList).get("x-invoke-path") || "";
   
-  if (profile.role === "staff" && path.startsWith("/admin/users")) {
+  if (profile.role === "staff" && (path.startsWith("/admin/users") || path.startsWith("/admin/logs"))) {
       redirect("/admin");
   }
 

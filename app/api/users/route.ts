@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logActivity } from "@/lib/activity-logs";
 import { userCreateSchema } from "@/lib/validators/user";
 
 export async function POST(request: Request) {
@@ -47,6 +48,19 @@ export async function POST(request: Request) {
   if (authError) {
     return NextResponse.json({ error: authError.message }, { status: 500 });
   }
+
+  await logActivity({
+    actorId: adminUser.id,
+    actorRole: adminProfile.role,
+    action: "user.create",
+    entityType: "user",
+    entityId: authData.user?.id ?? null,
+    entityLabel: fullName,
+    metadata: {
+      email,
+      role,
+    },
+  });
 
   return NextResponse.json({ user: authData.user }, { status: 201 });
 }

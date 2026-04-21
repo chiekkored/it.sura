@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
 import type { ListingPhoto } from "@/types";
 
 interface PhotoUploaderProps {
@@ -50,10 +49,13 @@ export function PhotoUploader({
   };
 
   const handleDelete = async (photo: ListingPhoto) => {
-    const supabase = createClient();
-    const path = new URL(photo.image_url).pathname.split("/object/public/")[1];
-    await supabase.storage.from("listing-images").remove([path.replace("listing-images/", "")]);
-    await supabase.from("listing_photos").delete().eq("id", photo.id);
+    const res = await fetch(`/api/upload?id=${photo.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Delete failed");
+      return;
+    }
+
     onPhotosChange(photos.filter((p) => p.id !== photo.id));
   };
 

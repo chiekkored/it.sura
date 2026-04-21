@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logActivity } from "@/lib/activity-logs";
 import { categorySchema } from "@/lib/validators/category";
 
 async function requireAdminSession() {
@@ -17,11 +18,11 @@ async function requireAdminSession() {
     return { supabase, error: NextResponse.json({ error: "Unauthorized" }, { status: 403 }) };
   }
 
-  return { supabase, error: null };
+  return { supabase, user, profile, error: null };
 }
 
 export async function POST(request: Request) {
-  const { supabase, error: authError } = await requireAdminSession();
+  const { supabase, user, profile, error: authError } = await requireAdminSession();
   if (authError) return authError;
 
   const body = await request.json();
@@ -40,6 +41,16 @@ export async function POST(request: Request) {
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await logActivity({
+    actorId: user.id,
+    actorRole: profile.role,
+    action: "category.create",
+    entityType: "category",
+    entityId: data.id,
+    entityLabel: data.name,
+    metadata: { slug: data.slug },
+  });
 
   return NextResponse.json(data, { status: 201 });
 }
