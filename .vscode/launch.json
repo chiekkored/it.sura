@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Next.js + Supabase",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "source ~/.nvm/nvm.sh && nvm use 20 && npm run dev",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "supabase:start",
+      "serverReadyAction": {
+        "pattern": "- Local:\\s+(https?://[^\\s]+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome"
+      }
+    }
+  ]
+}

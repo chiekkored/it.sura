@@ -1,0 +1,66 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "supabase:start",
+      "type": "shell",
+      "command": "supabase start",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "supabase",
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^(Starting|Creating|Pulling|Waiting|Applying|Initialising|Seeding|Started)",
+          "endsPattern": "^(Started supabase local development setup\\.|supabase local development setup is already running\\.)"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "dev"
+      }
+    },
+    {
+      "label": "supabase:stop",
+      "type": "shell",
+      "command": "supabase stop",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "dev"
+      }
+    },
+    {
+      "label": "next:dev",
+      "type": "shell",
+      "command": "source ~/.nvm/nvm.sh && nvm use 20 && npm run dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "next",
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\s*> ecommerce@0\\.1\\.0 dev",
+          "endsPattern": "^\\s*✓ Ready in"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "group": "dev"
+      }
+    },
+    {
+      "label": "dev:all",
+      "dependsOrder": "sequence",
+      "dependsOn": ["supabase:start", "next:dev"],
+      "problemMatcher": []
+    }
+  ]
+}
