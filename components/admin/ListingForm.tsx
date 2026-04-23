@@ -44,6 +44,7 @@ export function ListingForm({
   formId,
 }: ListingFormProps) {
   const router = useRouter();
+  const hasCategories = categories.length > 0;
   const pendingPhotoInputRef = useRef<HTMLInputElement>(null);
   const pendingPhotosRef = useRef<PendingPhoto[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -76,13 +77,18 @@ export function ListingForm({
           category_id: listing.category_id ?? "",
           is_active: listing.is_active,
         }
-      : { is_active: true, price: 0, size: "", inventory: [] },
+      : { category_id: "", is_active: true, price: 0, size: "", inventory: [] },
   });
 
   const inventory = watch("inventory") || [];
+  const categoryId = watch("category_id");
   const setInventory = (nextInventory: ListingFormValues["inventory"]) => {
     setValue("inventory", nextInventory, { shouldDirty: true, shouldValidate: true });
   };
+
+  useEffect(() => {
+    register("category_id");
+  }, [register]);
 
   useEffect(() => {
     pendingPhotosRef.current = pendingPhotos;
@@ -321,10 +327,14 @@ export function ListingForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="category_id">Category</Label>
-        <Select defaultValue={listing?.category_id ?? ""} onValueChange={(val) => setValue("category_id", val)}>
+        <Label htmlFor="category_id">Category *</Label>
+        <Select
+          value={categoryId}
+          onValueChange={(val) => setValue("category_id", val, { shouldDirty: true, shouldValidate: true })}
+          disabled={!hasCategories || isSaving}
+        >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select category" />
+            <SelectValue placeholder={hasCategories ? "Select category" : "Create a category first"} />
           </SelectTrigger>
           <SelectContent>
             {categories.map((cat) => (
@@ -334,6 +344,10 @@ export function ListingForm({
             ))}
           </SelectContent>
         </Select>
+        {!hasCategories && (
+          <p className="text-xs text-destructive">Create at least one category before saving a listing.</p>
+        )}
+        {errors.category_id && <p className="text-xs text-destructive">{errors.category_id.message}</p>}
       </div>
 
       <div className="space-y-1.5">

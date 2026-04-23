@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     .from("listings")
     .insert({
       ...rest,
-      category_id: category_id || null,
+      category_id,
       size: size || null,
       description: description || null,
       created_by: user.id,

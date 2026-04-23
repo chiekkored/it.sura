@@ -60,7 +60,7 @@ export type Database = {
           price: number;
           size: string | null;
           description: string | null;
-          category_id: string | null;
+          category_id: string;
           is_active: boolean;
           created_by: string | null;
           created_at: string;
@@ -73,7 +73,7 @@ export type Database = {
           price: number;
           size?: string | null;
           description?: string | null;
-          category_id?: string | null;
+          category_id: string;
           is_active?: boolean;
           created_by?: string | null;
           created_at?: string;
@@ -86,7 +86,7 @@ export type Database = {
           price?: number;
           size?: string | null;
           description?: string | null;
-          category_id?: string | null;
+          category_id?: string;
           is_active?: boolean;
           created_by?: string | null;
           updated_at?: string;
@@ -234,15 +234,111 @@ export type Database = {
         };
         Relationships: [];
       };
+      sales: {
+        Row: {
+          id: string;
+          sale_number: string;
+          cashier_id: string | null;
+          status: "completed" | "voided";
+          subtotal: number;
+          total: number;
+          payment_method: "cash" | "gcash" | "bank_transfer" | "card" | "other";
+          amount_paid: number;
+          change_due: number;
+          voided_at: string | null;
+          voided_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          sale_number: string;
+          cashier_id?: string | null;
+          status?: "completed" | "voided";
+          subtotal?: number;
+          total?: number;
+          payment_method: "cash" | "gcash" | "bank_transfer" | "card" | "other";
+          amount_paid?: number;
+          change_due?: number;
+          voided_at?: string | null;
+          voided_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          sale_number?: string;
+          cashier_id?: string | null;
+          status?: "completed" | "voided";
+          subtotal?: number;
+          total?: number;
+          payment_method?: "cash" | "gcash" | "bank_transfer" | "card" | "other";
+          amount_paid?: number;
+          change_due?: number;
+          voided_at?: string | null;
+          voided_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      sale_items: {
+        Row: {
+          id: string;
+          sale_id: string;
+          listing_id: string | null;
+          listing_title: string;
+          size: string;
+          quantity: number;
+          unit_price: number;
+          line_total: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          sale_id: string;
+          listing_id?: string | null;
+          listing_title: string;
+          size: string;
+          quantity: number;
+          unit_price: number;
+          line_total: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          sale_id?: string;
+          listing_id?: string | null;
+          listing_title?: string;
+          size?: string;
+          quantity?: number;
+          unit_price?: number;
+          line_total?: number;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      create_pos_sale: {
+        Args: {
+          p_items: Json;
+          p_payment_method: "cash" | "gcash" | "bank_transfer" | "card" | "other";
+          p_amount_paid: number;
+        };
+        Returns: Json;
+      };
       update_order_status_with_inventory: {
         Args: {
           p_order_id: string;
           p_status: "new" | "contacted" | "pending_payment" | "completed" | "cancelled";
+        };
+        Returns: Json;
+      };
+      void_pos_sale: {
+        Args: {
+          p_sale_id: string;
         };
         Returns: Json;
       };
@@ -261,8 +357,12 @@ export type ListingPhoto = Database["public"]["Tables"]["listing_photos"]["Row"]
 export type ListingInventory = Database["public"]["Tables"]["listing_inventory"]["Row"];
 export type OrderRequest = Database["public"]["Tables"]["order_requests"]["Row"];
 export type ActivityLog = Database["public"]["Tables"]["activity_logs"]["Row"];
+export type Sale = Database["public"]["Tables"]["sales"]["Row"];
+export type SaleItem = Database["public"]["Tables"]["sale_items"]["Row"];
 
 export type OrderStatus = OrderRequest["status"];
+export type SaleStatus = Sale["status"];
+export type SalePaymentMethod = Sale["payment_method"];
 
 // Joined types used in queries
 export type ListingWithPhotos = Listing & {
@@ -273,4 +373,9 @@ export type ListingWithPhotos = Listing & {
 
 export type OrderRequestWithListing = OrderRequest & {
   listings: Pick<Listing, "id" | "title" | "slug"> | null;
+};
+
+export type SaleWithItems = Sale & {
+  sale_items: SaleItem[];
+  cashier: Pick<Profile, "full_name"> | null;
 };

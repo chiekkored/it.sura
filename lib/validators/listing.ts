@@ -20,7 +20,7 @@ export const listingSchema = z
       .optional()
       .default([]),
     description: z.string().max(5000).optional().or(z.literal("")),
-    category_id: z.string().uuid().optional().or(z.literal("")),
+    category_id: z.string().uuid("Category is required"),
     is_active: z.boolean().default(true),
   })
   .superRefine((values, context) => {

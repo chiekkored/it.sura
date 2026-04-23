@@ -104,7 +104,7 @@ export async function PUT(request: Request, { params }: Context) {
     .from("listings")
     .update({
       ...rest,
-      category_id: category_id || null,
+      category_id,
       size: size || null,
       description: description || null,
     })

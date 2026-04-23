@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { adminLogsEnabled } from "@/flags";
+import { adminLogsEnabled, adminPosSalesEnabled } from "@/flags";
 import { createClient } from "@/lib/supabase/server";
 import { AdminShell } from "@/components/admin/AdminShell";
 import type { ReactNode } from "react";
@@ -31,7 +31,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     redirect("/admin");
   }
 
-  const logsEnabled = await adminLogsEnabled();
+  const [logsEnabled, posSalesEnabled] = await Promise.all([adminLogsEnabled(), adminPosSalesEnabled()]);
 
-  return <AdminShell logsEnabled={logsEnabled}>{children}</AdminShell>;
+  return (
+    <AdminShell logsEnabled={logsEnabled} posSalesEnabled={posSalesEnabled}>
+      {children}
+    </AdminShell>
+  );
 }

@@ -40,6 +40,17 @@ const adminLogsFlagDefinition = {
   description: "Enable admin activity log writes, API access, and the admin logs page.",
 };
 
+const adminPosSalesFlagDefinition = {
+  key: "admin-pos-sales",
+  defaultValue: false,
+  identify: identifyAdmin,
+  options: [
+    { value: false, label: "Off" },
+    { value: true, label: "On" },
+  ],
+  description: "Enable admin POS checkout, sales APIs, and the admin sales page.",
+};
+
 export const adminLogsEnabled = process.env.FLAGS
   ? flag<boolean, AdminFlagEntities>({
       ...adminLogsFlagDefinition,
@@ -47,5 +58,15 @@ export const adminLogsEnabled = process.env.FLAGS
     })
   : flag<boolean, AdminFlagEntities>({
       ...adminLogsFlagDefinition,
+      decide: () => false,
+    });
+
+export const adminPosSalesEnabled = process.env.FLAGS
+  ? flag<boolean, AdminFlagEntities>({
+      ...adminPosSalesFlagDefinition,
+      adapter: vercelAdapter(),
+    })
+  : flag<boolean, AdminFlagEntities>({
+      ...adminPosSalesFlagDefinition,
       decide: () => false,
     });

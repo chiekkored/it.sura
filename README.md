@@ -67,7 +67,10 @@ Do not commit real secret values.
 
 This project uses Vercel Flags through the `flags` and `@flags-sdk/vercel` packages.
 
-The `admin-logs` flag controls the admin logs page, logs API, and whether activity logs are saved.
+Feature flags:
+
+- `admin-logs` controls the admin logs page, logs API, and whether activity logs are saved.
+- `admin-pos-sales` controls the POS page, Sales page, and Sales APIs.
 
 Local development reads flags from `.env.local`. Vercel flag values apply only after deployment in the selected Vercel environment.
 

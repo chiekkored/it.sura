@@ -75,7 +75,7 @@ export async function DELETE(_request: Request, { params }: Context) {
 
   if ((count ?? 0) > 0) {
     return NextResponse.json(
-      { error: "Category is used by listings. Reassign or clear those listings first." },
+      { error: "Category is used by listings. Reassign those listings first." },
       { status: 409 },
     );
   }
