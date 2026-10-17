@@ -8,6 +8,7 @@ import { ImageCarousel } from "@/components/catalog/ImageCarousel";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import type { Listing, ListingPhoto, Category, ListingInventory } from "@/types";
+import { demoCategories, demoListings } from "@/lib/demo-catalog";
 
 type ListingFull = Listing & {
   listing_photos: ListingPhoto[];
@@ -21,6 +22,15 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  if (process.env.NEXT_PUBLIC_CATALOG_DEMO === "true") {
+    const listing = demoListings.find((item) => item.slug === slug);
+    if (!listing) return { title: "Item Not Found" };
+    return {
+      title: `${listing.title} — Shop`,
+      description: listing.description ?? undefined,
+    };
+  }
+
   const supabase = await createClient();
   const { data } = await supabase.from("listings").select("title, description").eq("slug", slug).single();
 
@@ -34,16 +44,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ItemPage({ params }: Props) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const demoMode = process.env.NEXT_PUBLIC_CATALOG_DEMO === "true";
+  let listing: ListingFull | null;
 
-  const { data: listingRaw } = await supabase
-    .from("listings")
-    .select("*, listing_photos(*), listing_inventory(*), categories(*)")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .single();
+  if (demoMode) {
+    const demoListing = demoListings.find((item) => item.slug === slug && item.is_active);
+    listing = demoListing
+      ? {
+          ...demoListing,
+          categories: demoCategories.find((category) => category.id === demoListing.category_id) ?? null,
+        }
+      : null;
+  } else {
+    const supabase = await createClient();
+    const { data: listingRaw } = await supabase
+      .from("listings")
+      .select("*, listing_photos(*), listing_inventory(*), categories(*)")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .single();
+    listing = listingRaw as unknown as ListingFull | null;
+  }
 
-  const listing = listingRaw as unknown as ListingFull | null;
   if (!listing) notFound();
 
   const photos = [...(listing.listing_photos ?? [])].sort((a, b) => a.sort_order - b.sort_order);

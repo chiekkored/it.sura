@@ -61,6 +61,8 @@ FLAGS=
 FLAGS_SECRET=
 ```
 
+For portfolio screenshots, set `NEXT_PUBLIC_CATALOG_DEMO=true` to show a local sample catalog, product detail pages, and a simulated request form without Supabase. Demo submissions are not sent or saved. Set the variable to `false` or remove it to return to database-backed listings. Admin routes remain protected and continue to use Supabase authentication.
+
 Do not commit real secret values.
 
 ## Feature Flags

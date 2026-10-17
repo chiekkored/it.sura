@@ -20,6 +20,7 @@ const INSTAGRAM_URL = "https://www.instagram.com/it.sura.ph";
 interface RequestFormProps {
   listingId: string;
   inventory: Array<{ id: string; size: string; quantity: number }>;
+  demoMode?: boolean;
 }
 
 function FacebookLogo(props: SVGProps<SVGSVGElement>) {
@@ -40,7 +41,7 @@ function InstagramLogo(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-export function RequestForm({ listingId, inventory }: RequestFormProps) {
+export function RequestForm({ listingId, inventory, demoMode = false }: RequestFormProps) {
   const [requestCode, setRequestCode] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -95,6 +96,11 @@ export function RequestForm({ listingId, inventory }: RequestFormProps) {
       return;
     }
 
+    if (demoMode) {
+      setRequestCode("DEMO-00001");
+      return;
+    }
+
     const res = await fetch("/api/requests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -113,14 +119,18 @@ export function RequestForm({ listingId, inventory }: RequestFormProps) {
       <div className="text-center space-y-5 py-8">
         <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold">Request Submitted!</h2>
-          <p className="text-muted-foreground text-sm">Your request has been received. We&apos;ll contact you soon.</p>
+          <h2 className="text-lg font-semibold">{demoMode ? "Demo Request Complete" : "Request Submitted!"}</h2>
+          <p className="text-muted-foreground text-sm">
+            {demoMode
+              ? "This was a demo. No request was sent or saved."
+              : "Your request has been received. We'll contact you soon."}
+          </p>
         </div>
         <div className="inline-block px-6 py-3 bg-muted rounded-lg">
           <p className="text-xs text-muted-foreground mb-1">Your Request ID</p>
           <p className="text-xl font-mono font-bold tracking-wider">{requestCode}</p>
         </div>
-        <div className="space-y-3">
+        {!demoMode && <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
             For faster transaction, message us directly and include your Request ID.
           </p>
@@ -141,13 +151,18 @@ export function RequestForm({ listingId, inventory }: RequestFormProps) {
           <p className="text-xs text-muted-foreground">
             Send this ID in your chat: <span className="font-mono font-semibold text-foreground">{requestCode}</span>
           </p>
-        </div>
+        </div>}
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {demoMode && (
+        <p className="rounded-lg border bg-muted/50 p-3 text-sm text-muted-foreground">
+          Demo preview: submitting this form will not send or save your information.
+        </p>
+      )}
       <div className="space-y-4 rounded-xl border p-4 bg-card">
         <div className="space-y-3">
           <Label className="text-base font-semibold">Select Size *</Label>

@@ -1,7 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
+  // Demo catalog pages are static and must render when Supabase is offline.
+  const pathname = request.nextUrl.pathname;
+  if (
+    process.env.NEXT_PUBLIC_CATALOG_DEMO === "true" &&
+    (pathname === "/" || pathname.startsWith("/item/") || pathname.startsWith("/request/"))
+  ) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -30,8 +39,6 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
-  
   // Helper to create a redirect response with refreshed cookies
   const createRedirectResponse = (to: string) => {
     const url = request.nextUrl.clone();
